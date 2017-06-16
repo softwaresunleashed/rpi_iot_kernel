@@ -12,6 +12,9 @@
 *.order
 *.swp
 *.s
+*.mod.c
+*.ko
+.tmp_*
 
 # Directories #
 ###############
@@ -24,7 +27,11 @@ linux/include/generated/
 # Individual Files #
 ####################
 .version
-linux/.config
+vmlinux
+System.map
+.config
+Module.symvers
+lib.a
 
 # Packages #
 ############
