@@ -6,6 +6,25 @@
 *.exe
 *.o
 *.so
+*.cmd
+*.builtin
+*.d
+*.order
+*.swp
+*.s
+
+# Directories #
+###############
+.tmp_versions/
+linux/arch/arm/include/generated/
+linux/include/config/
+linux/include/generated/
+
+
+# Individual Files #
+####################
+.version
+linux/.config
 
 # Packages #
 ############
