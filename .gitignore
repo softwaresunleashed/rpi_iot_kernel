@@ -23,7 +23,7 @@
 linux/arch/arm/include/generated/
 linux/include/config/
 linux/include/generated/
-
+MODULES_TO_COPY/
 
 # Individual Files #
 ####################
