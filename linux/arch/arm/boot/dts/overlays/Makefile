@@ -6,15 +6,21 @@ dtbo-$(CONFIG_ARCH_BCM2835) += \
 	ads1015.dtbo \
 	ads1115.dtbo \
 	ads7846.dtbo \
+	adv7282m.dtbo \
+	adv728x-m.dtbo \
 	akkordion-iqdacplus.dtbo \
 	allo-boss-dac-pcm512x-audio.dtbo \
 	allo-digione.dtbo \
+	allo-katana-dac-audio.dtbo \
 	allo-piano-dac-pcm512x-audio.dtbo \
 	allo-piano-dac-plus-pcm512x-audio.dtbo \
+	applepi-dac.dtbo \
 	at86rf233.dtbo \
 	audioinjector-addons.dtbo \
+	audioinjector-ultra.dtbo \
 	audioinjector-wm8731-audio.dtbo \
 	audremap.dtbo \
+	balena-fin.dtbo \
 	bmp085_i2c-sensor.dtbo \
 	dht11.dtbo \
 	dionaudio-loco.dtbo \
@@ -25,11 +31,18 @@ dtbo-$(CONFIG_ARCH_BCM2835) += \
 	dwc2.dtbo \
 	enc28j60.dtbo \
 	enc28j60-spi2.dtbo \
+	exc3000.dtbo \
 	fe-pi-audio.dtbo \
 	goodix.dtbo \
 	googlevoicehat-soundcard.dtbo \
+	gpio-fan.dtbo \
 	gpio-ir.dtbo \
+	gpio-ir-tx.dtbo \
+	gpio-key.dtbo \
+	gpio-no-irq.dtbo \
 	gpio-poweroff.dtbo \
+	gpio-shutdown.dtbo \
+	hd44780-lcd.dtbo \
 	hifiberry-amp.dtbo \
 	hifiberry-dac.dtbo \
 	hifiberry-dacplus.dtbo \
@@ -42,6 +55,7 @@ dtbo-$(CONFIG_ARCH_BCM2835) += \
 	i2c-mux.dtbo \
 	i2c-pwm-pca9685a.dtbo \
 	i2c-rtc.dtbo \
+	i2c-rtc-gpio.dtbo \
 	i2c-sensor.dtbo \
 	i2c0-bcm2708.dtbo \
 	i2c1-bcm2708.dtbo \
@@ -49,23 +63,31 @@ dtbo-$(CONFIG_ARCH_BCM2835) += \
 	iqaudio-dac.dtbo \
 	iqaudio-dacplus.dtbo \
 	iqaudio-digi-wm8804-audio.dtbo \
+	jedec-spi-nor.dtbo \
 	justboom-dac.dtbo \
 	justboom-digi.dtbo \
 	lirc-rpi.dtbo \
+	ltc294x.dtbo \
+	mbed-dac.dtbo \
 	mcp23017.dtbo \
 	mcp23s17.dtbo \
 	mcp2515-can0.dtbo \
 	mcp2515-can1.dtbo \
 	mcp3008.dtbo \
+	mcp3202.dtbo \
+	media-center.dtbo \
 	midi-uart0.dtbo \
 	midi-uart1.dtbo \
 	mmc.dtbo \
 	mpu6050.dtbo \
 	mz61581.dtbo \
+	ov5647.dtbo \
+	papirus.dtbo \
 	pi3-act-led.dtbo \
 	pi3-disable-bt.dtbo \
 	pi3-disable-wifi.dtbo \
 	pi3-miniuart-bt.dtbo \
+	pibell.dtbo \
 	piscreen.dtbo \
 	piscreen2r.dtbo \
 	pisound.dtbo \
@@ -76,19 +98,21 @@ dtbo-$(CONFIG_ARCH_BCM2835) += \
 	pps-gpio.dtbo \
 	pwm.dtbo \
 	pwm-2chan.dtbo \
+	pwm-ir-tx.dtbo \
 	qca7000.dtbo \
-	raspidac3.dtbo \
 	rotary-encoder.dtbo \
 	rpi-backlight.dtbo \
 	rpi-cirrus-wm5102.dtbo \
 	rpi-dac.dtbo \
 	rpi-display.dtbo \
 	rpi-ft5406.dtbo \
+	rpi-poe.dtbo \
 	rpi-proto.dtbo \
 	rpi-sense.dtbo \
 	rpi-tv.dtbo \
 	rra-digidac1-wm8741-audio.dtbo \
 	sc16is750-i2c.dtbo \
+	sc16is752-i2c.dtbo \
 	sc16is752-spi1.dtbo \
 	sdhost.dtbo \
 	sdio.dtbo \
@@ -107,9 +131,17 @@ dtbo-$(CONFIG_ARCH_BCM2835) += \
 	spi2-1cs.dtbo \
 	spi2-2cs.dtbo \
 	spi2-3cs.dtbo \
+	superaudioboard.dtbo \
+	sx150x.dtbo \
+	tc358743.dtbo \
+	tc358743-audio.dtbo \
 	tinylcd35.dtbo \
+	uart0.dtbo \
 	uart1.dtbo \
+	upstream.dtbo \
+	upstream-aux-interrupt.dtbo \
 	vc4-fkms-v3d.dtbo \
+	vc4-kms-kippah-7inch.dtbo \
 	vc4-kms-v3d.dtbo \
 	vga666.dtbo \
 	w1-gpio.dtbo \

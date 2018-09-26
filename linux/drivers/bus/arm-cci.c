@@ -1755,14 +1755,17 @@ static int cci_pmu_probe(struct platform_device *pdev)
 	raw_spin_lock_init(&cci_pmu->hw_events.pmu_lock);
 	mutex_init(&cci_pmu->reserve_mutex);
 	atomic_set(&cci_pmu->active_events, 0);
-	cpumask_set_cpu(smp_processor_id(), &cci_pmu->cpus);
+	cpumask_set_cpu(get_cpu(), &cci_pmu->cpus);
 
 	ret = cci_pmu_init(cci_pmu, pdev);
-	if (ret)
+	if (ret) {
+		put_cpu();
 		return ret;
+	}
 
 	cpuhp_state_add_instance_nocalls(CPUHP_AP_PERF_ARM_CCI_ONLINE,
 					 &cci_pmu->node);
+	put_cpu();
 	pr_info("ARM %s PMU driver probed", cci_pmu->model->name);
 	return 0;
 }
@@ -1796,7 +1799,7 @@ static int __init cci_platform_init(void)
 	int ret;
 
 	ret = cpuhp_setup_state_multi(CPUHP_AP_PERF_ARM_CCI_ONLINE,
-				      "AP_PERF_ARM_CCI_ONLINE", NULL,
+				      "perf/arm/cci:online", NULL,
 				      cci_pmu_offline_cpu);
 	if (ret)
 		return ret;
@@ -2124,8 +2127,8 @@ int notrace __cci_control_port_by_device(struct device_node *dn, bool enable)
 		return -ENODEV;
 
 	port = __cci_ace_get_port(dn, ACE_LITE_PORT);
-	if (WARN_ONCE(port < 0, "node %s ACE lite port look-up failure\n",
-				dn->full_name))
+	if (WARN_ONCE(port < 0, "node %pOF ACE lite port look-up failure\n",
+				dn))
 		return -ENODEV;
 	cci_port_control(port, enable);
 	return 0;
@@ -2190,6 +2193,9 @@ static int cci_probe_ports(struct device_node *np)
 		if (!of_match_node(arm_cci_ctrl_if_matches, cp))
 			continue;
 
+		if (!of_device_is_available(cp))
+			continue;
+
 		i = nb_ace + nb_ace_lite;
 
 		if (i >= nb_cci_ports)
@@ -2197,14 +2203,14 @@ static int cci_probe_ports(struct device_node *np)
 
 		if (of_property_read_string(cp, "interface-type",
 					&match_str)) {
-			WARN(1, "node %s missing interface-type property\n",
-				  cp->full_name);
+			WARN(1, "node %pOF missing interface-type property\n",
+				  cp);
 			continue;
 		}
 		is_ace = strcmp(match_str, "ace") == 0;
 		if (!is_ace && strcmp(match_str, "ace-lite")) {
-			WARN(1, "node %s containing invalid interface-type property, skipping it\n",
-					cp->full_name);
+			WARN(1, "node %pOF containing invalid interface-type property, skipping it\n",
+					cp);
 			continue;
 		}
 
@@ -2231,6 +2237,13 @@ static int cci_probe_ports(struct device_node *np)
 		}
 		ports[i].dn = cp;
 	}
+
+	/*
+	 * If there is no CCI port that is under kernel control
+	 * return early and report probe status.
+	 */
+	if (!nb_ace && !nb_ace_lite)
+		return -ENODEV;
 
 	 /* initialize a stashed array of ACE ports to speed-up look-up */
 	cci_ace_init_ports();

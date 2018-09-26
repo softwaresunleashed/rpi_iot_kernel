@@ -94,7 +94,7 @@ do {							\
 #define HC_START	0x500
 #define HC_OFFSET	0x020
 
-#define HC_DMA		0x514
+#define HC_DMA		0x14
 
 #define HCCHAR		0x00
 #define HCSPLT		0x04
@@ -178,6 +178,8 @@ enum fiq_fsm_state {
 	/* Nonperiodic state groups */
 	FIQ_NP_SSPLIT_STARTED = 1,
 	FIQ_NP_SSPLIT_RETRY = 2,
+	/* TT contention - working around hub bugs */
+	FIQ_NP_SSPLIT_PENDING = 33,
 	FIQ_NP_OUT_CSPLIT_RETRY = 3,
 	FIQ_NP_IN_CSPLIT_RETRY = 4,
 	FIQ_NP_SPLIT_DONE = 5,

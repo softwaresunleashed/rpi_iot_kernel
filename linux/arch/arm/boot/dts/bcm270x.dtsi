@@ -1,20 +1,15 @@
 /* Downstream bcm283x.dtsi diff */
-#include "dt-bindings/power/raspberrypi-power.h"
+#include <dt-bindings/power/raspberrypi-power.h>
 
 / {
 	chosen {
 		bootargs = "";
+		/delete-property/ stdout-path;
 	};
 
 	soc: soc {
 
-		/delete-node/ timer@7e003000;
-
 		watchdog: watchdog@7e100000 {
-			/* Add alias */
-		};
-
-		cprman: cprman@7e101000 {
 			/* Add alias */
 		};
 
@@ -24,18 +19,18 @@
 
 		gpio@7e200000 { /* gpio */
 			interrupts = <2 17>, <2 18>;
+
+			dpi_18bit_gpio0: dpi_18bit_gpio0 {
+				brcm,pins = <0 1 2 3 4 5 6 7 8 9 10 11
+					     12 13 14 15 16 17 18 19
+					     20 21>;
+				brcm,function = <BCM2835_FSEL_ALT2>;
+			};
 		};
 
-		sdhost: sdhost@7e202000 {
-			compatible = "brcm,bcm2835-sdhost";
-			reg = <0x7e202000 0x100>;
-			interrupts = <2 24>;
-			clocks = <&clocks BCM2835_CLOCK_VPU>;
-			dmas = <&dma 13>;
-			dma-names = "rx-tx";
-			brcm,overclock-50 = <0>;
-			brcm,pio-limit = <1>;
-			status = "disabled";
+		serial@7e201000 { /* uart0 */
+			/* Enable CTS bug workaround */
+			cts-event-workaround;
 		};
 
 		i2s@7e203000 { /* i2s */
@@ -74,7 +69,7 @@
 		/delete-node/ sdhci@7e300000;
 
 		mmc: mmc@7e300000 {
-			compatible = "brcm,bcm2835-mmc";
+			compatible = "brcm,bcm2835-mmc", "brcm,bcm2835-sdhci";
 			reg = <0x7e300000 0x100>;
 			interrupts = <2 30>;
 			clocks = <&clocks BCM2835_CLOCK_EMMC>;
@@ -103,7 +98,7 @@
 			reg = <0x7e600000 0x100>;
 			interrupts = <2 16>;
 			clocks = <&clocks BCM2835_CLOCK_SMI>;
-			assigned-clocks = <&cprman BCM2835_CLOCK_SMI>;
+			assigned-clocks = <&clocks BCM2835_CLOCK_SMI>;
 			assigned-clock-rates = <125000000>;
 			dmas = <&dma 4>;
 			dma-names = "rx-tx";
@@ -133,33 +128,13 @@
 			status = "disabled";
 		};
 
-		gpu: gpu {
-			/* Add alias */
+		axiperf: axiperf {
+			compatible = "brcm,bcm2835-axiperf";
+			reg = <0x7e009800 0x100>,
+			      <0x7ee08000 0x100>;
+			firmware = <&firmware>;
 			status = "disabled";
 		};
-
-		i2c_dsi: i2cdsi {
-			/* We have to use i2c-gpio because the
-			 * firmware is also polling another device
-			 * using the only hardware I2C bus that could
-			 * connect to these pins.
-			 */
-			compatible = "i2c-gpio";
-			#address-cells = <1>;
-			#size-cells = <0>;
-			status = "disabled";
-
-			pitouchscreen_bridge: bridge@45 {
-				compatible = "raspberrypi,touchscreen-bridge-i2c";
-				reg = <0x45>;
-			};
-
-			pitouchscreen_touch: bridge@38 {
-				compatible = "raspberrypi,touchscreen-ts-i2c";
-				reg = <0x38>;
-			};
-		};
-
 	};
 
 	vdd_5v0_reg: fixedregulator_5v0 {
@@ -177,8 +152,38 @@
 		regulator-max-microvolt = <3300000>;
 		regulator-always-on;
 	};
+
+	__overrides__ {
+		cam0-pwdn-ctrl;
+		cam0-pwdn;
+		cam0-led-ctrl;
+		cam0-led;
+	};
 };
 
-&dsi1 {
-	power-domains = <&power RPI_POWER_DOMAIN_DSI1>;
+/* Configure and use the auxilliary interrupt controller */
+
+&aux {
+	interrupts = <1 29>;
+	interrupt-controller;
+	#interrupt-cells = <1>;
+};
+
+&uart1 {
+	interrupt-parent = <&aux>;
+	interrupts = <0>;
+};
+
+&spi1 {
+	interrupt-parent = <&aux>;
+	interrupts = <1>;
+};
+
+&spi2 {
+	interrupt-parent = <&aux>;
+	interrupts = <2>;
+};
+
+&vc4 {
+	status = "disabled";
 };

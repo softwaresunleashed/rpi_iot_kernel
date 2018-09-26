@@ -62,8 +62,11 @@ enum vmcs_sm_cmd_e {
 	VMCS_SM_CMD_HOST_WALK_PID_MAP,
 
 	VMCS_SM_CMD_CLEAN_INVALID,
+	VMCS_SM_CMD_CLEAN_INVALID2,
 
-	VMCS_SM_CMD_LAST	/* Do no delete */
+	VMCS_SM_CMD_IMPORT_DMABUF,
+
+	VMCS_SM_CMD_LAST	/* Do not delete */
 };
 
 /* Cache type supported, conveniently matches the user space definition in
@@ -165,6 +168,15 @@ struct vmcs_sm_ioctl_cache {
 	unsigned int size;
 };
 
+/*
+ * Cache functions to be set to struct vmcs_sm_ioctl_clean_invalid cmd and
+ * vmcs_sm_ioctl_clean_invalid2 invalidate_mode.
+ */
+#define VCSM_CACHE_OP_NOP       0x00
+#define VCSM_CACHE_OP_INV       0x01
+#define VCSM_CACHE_OP_CLEAN     0x02
+#define VCSM_CACHE_OP_FLUSH     0x03
+
 struct vmcs_sm_ioctl_clean_invalid {
 	/* user -> kernel */
 	struct {
@@ -173,6 +185,28 @@ struct vmcs_sm_ioctl_clean_invalid {
 		unsigned int addr;
 		unsigned int size;
 	} s[8];
+};
+
+struct vmcs_sm_ioctl_clean_invalid2 {
+	uint8_t op_count;
+	uint8_t zero[3];
+	struct vmcs_sm_ioctl_clean_invalid_block {
+		uint16_t invalidate_mode;
+		uint16_t block_count;
+		void *   start_address;
+		uint32_t block_size;
+		uint32_t inter_block_stride;
+	} s[0];
+};
+
+struct vmcs_sm_ioctl_import_dmabuf {
+	/* user -> kernel */
+	int dmabuf_fd;
+	enum vmcs_sm_cache_e cached;
+	char name[VMCS_SM_RESOURCE_NAME];
+
+	/* kernel -> user */
+	unsigned int handle;
 };
 
 /* IOCTL numbers */
@@ -206,6 +240,9 @@ struct vmcs_sm_ioctl_clean_invalid {
 #define VMCS_SM_IOCTL_MEM_CLEAN_INVALID\
 	_IOR(VMCS_SM_MAGIC_TYPE, VMCS_SM_CMD_CLEAN_INVALID,\
 	 struct vmcs_sm_ioctl_clean_invalid)
+#define VMCS_SM_IOCTL_MEM_CLEAN_INVALID2\
+	_IOR(VMCS_SM_MAGIC_TYPE, VMCS_SM_CMD_CLEAN_INVALID2,\
+	 struct vmcs_sm_ioctl_clean_invalid2)
 
 #define VMCS_SM_IOCTL_SIZE_USR_HDL\
 	_IOR(VMCS_SM_MAGIC_TYPE, VMCS_SM_CMD_SIZE_USR_HANDLE,\
@@ -240,6 +277,10 @@ struct vmcs_sm_ioctl_clean_invalid {
 #define VMCS_SM_IOCTL_HOST_WALK_PID_MAP\
 	_IOR(VMCS_SM_MAGIC_TYPE, VMCS_SM_CMD_HOST_WALK_PID_MAP,\
 	 struct vmcs_sm_ioctl_walk)
+
+#define VMCS_SM_IOCTL_MEM_IMPORT_DMABUF\
+	_IOR(VMCS_SM_MAGIC_TYPE, VMCS_SM_CMD_IMPORT_DMABUF,\
+	 struct vmcs_sm_ioctl_import_dmabuf)
 
 /* ---- Variable Externs ------------------------------------------------- */
 

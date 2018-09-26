@@ -16,8 +16,9 @@
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "linux/component.h"
-#include "linux/pm_runtime.h"
+#include <linux/clk.h>
+#include <linux/component.h>
+#include <linux/pm_runtime.h>
 #include "vc4_drv.h"
 #include "vc4_regs.h"
 
@@ -235,7 +236,8 @@ vc4_allocate_bin_bo(struct drm_device *drm)
 	INIT_LIST_HEAD(&list);
 
 	while (true) {
-		struct vc4_bo *bo = vc4_bo_create(drm, size, true);
+		struct vc4_bo *bo = vc4_bo_create(drm, size, true,
+						  VC4_BO_TYPE_BIN);
 
 		if (IS_ERR(bo)) {
 			ret = PTR_ERR(bo);
@@ -288,7 +290,7 @@ vc4_allocate_bin_bo(struct drm_device *drm)
 						    struct vc4_bo, unref_head);
 
 		list_del(&bo->unref_head);
-		drm_gem_object_unreference_unlocked(&bo->base.base);
+		drm_gem_object_put_unlocked(&bo->base.base);
 	}
 
 	return ret;
@@ -302,8 +304,10 @@ static int vc4_v3d_runtime_suspend(struct device *dev)
 
 	vc4_irq_uninstall(vc4->dev);
 
-	drm_gem_object_unreference_unlocked(&vc4->bin_bo->base.base);
+	drm_gem_object_put_unlocked(&vc4->bin_bo->base.base);
 	vc4->bin_bo = NULL;
+
+	clk_disable_unprepare(v3d->clk);
 
 	return 0;
 }
@@ -318,7 +322,14 @@ static int vc4_v3d_runtime_resume(struct device *dev)
 	if (ret)
 		return ret;
 
+	ret = clk_prepare_enable(v3d->clk);
+	if (ret != 0)
+		return ret;
+
 	vc4_v3d_init_hw(vc4->dev);
+
+	/* We disabled the IRQ as part of vc4_irq_uninstall in suspend. */
+	enable_irq(vc4->dev->irq);
 	vc4_irq_postinstall(vc4->dev);
 
 	return 0;
@@ -348,15 +359,37 @@ static int vc4_v3d_bind(struct device *dev, struct device *master, void *data)
 	vc4->v3d = v3d;
 	v3d->vc4 = vc4;
 
+	v3d->clk = devm_clk_get(dev, NULL);
+	if (IS_ERR(v3d->clk)) {
+		int ret = PTR_ERR(v3d->clk);
+
+		if (ret == -ENOENT) {
+			/* bcm2835 didn't have a clock reference in the DT. */
+			ret = 0;
+			v3d->clk = NULL;
+		} else {
+			if (ret != -EPROBE_DEFER)
+				dev_err(dev, "Failed to get V3D clock: %d\n",
+					ret);
+			return ret;
+		}
+	}
+
 	if (V3D_READ(V3D_IDENT0) != V3D_EXPECTED_IDENT0) {
 		DRM_ERROR("V3D_IDENT0 read 0x%08x instead of 0x%08x\n",
 			  V3D_READ(V3D_IDENT0), V3D_EXPECTED_IDENT0);
 		return -EINVAL;
 	}
 
-	ret = vc4_allocate_bin_bo(drm);
-	if (ret)
+	ret = clk_prepare_enable(v3d->clk);
+	if (ret != 0)
 		return ret;
+
+	ret = vc4_allocate_bin_bo(drm);
+	if (ret) {
+		clk_disable_unprepare(v3d->clk);
+		return ret;
+	}
 
 	/* Reset the binner overflow address/size at setup, to be sure
 	 * we don't reuse an old one.
@@ -422,6 +455,7 @@ static int vc4_v3d_dev_remove(struct platform_device *pdev)
 
 static const struct of_device_id vc4_v3d_dt_match[] = {
 	{ .compatible = "brcm,bcm2835-v3d" },
+	{ .compatible = "brcm,cygnus-v3d" },
 	{ .compatible = "brcm,vc4-v3d" },
 	{}
 };

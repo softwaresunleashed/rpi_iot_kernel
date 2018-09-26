@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef __SPARC64_MMU_CONTEXT_H
 #define __SPARC64_MMU_CONTEXT_H
 
@@ -6,8 +7,12 @@
 #ifndef __ASSEMBLY__
 
 #include <linux/spinlock.h>
+#include <linux/mm_types.h>
+#include <linux/smp.h>
+
 #include <asm/spitfire.h>
 #include <asm-generic/mm_hooks.h>
+#include <asm/percpu.h>
 
 static inline void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
 {
@@ -25,21 +30,26 @@ void destroy_context(struct mm_struct *mm);
 void __tsb_context_switch(unsigned long pgd_pa,
 			  struct tsb_config *tsb_base,
 			  struct tsb_config *tsb_huge,
-			  unsigned long tsb_descr_pa);
+			  unsigned long tsb_descr_pa,
+			  unsigned long secondary_ctx);
 
-static inline void tsb_context_switch(struct mm_struct *mm)
+static inline void tsb_context_switch_ctx(struct mm_struct *mm,
+					  unsigned long ctx)
 {
 	__tsb_context_switch(__pa(mm->pgd),
-			     &mm->context.tsb_block[0],
+			     &mm->context.tsb_block[MM_TSB_BASE],
 #if defined(CONFIG_HUGETLB_PAGE) || defined(CONFIG_TRANSPARENT_HUGEPAGE)
-			     (mm->context.tsb_block[1].tsb ?
-			      &mm->context.tsb_block[1] :
+			     (mm->context.tsb_block[MM_TSB_HUGE].tsb ?
+			      &mm->context.tsb_block[MM_TSB_HUGE] :
 			      NULL)
 #else
 			     NULL
 #endif
-			     , __pa(&mm->context.tsb_descr[0]));
+			     , __pa(&mm->context.tsb_descr[MM_TSB_BASE]),
+			     ctx);
 }
+
+#define tsb_context_switch(X) tsb_context_switch_ctx(X, 0)
 
 void tsb_grow(struct mm_struct *mm,
 	      unsigned long tsb_index,
@@ -110,8 +120,7 @@ static inline void switch_mm(struct mm_struct *old_mm, struct mm_struct *mm, str
 	 * cpu0 to update it's TSB because at that point the cpu_vm_mask
 	 * only had cpu1 set in it.
 	 */
-	load_secondary_context(mm);
-	tsb_context_switch(mm);
+	tsb_context_switch_ctx(mm, CTX_HWBITS(mm->context));
 
 	/* Any time a processor runs a context on an address space
 	 * for the first time, we must flush that context out of the
