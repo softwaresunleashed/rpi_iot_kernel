@@ -109,3 +109,15 @@
 	pinctrl-0 = <&uart0_gpio14>;
 	status = "okay";
 };
+
+&i2c{
+	status = "okay";
+	pn547: pn547@28 {
+		compatible = "nxp,pn547";
+		reg = <0x28>;
+		clock-frequency = <400000>;
+		interrupt-gpios = <&gpio2 17 0>;
+		enable-gpios = <&gpio4 21 0>;
+	};
+};
+
