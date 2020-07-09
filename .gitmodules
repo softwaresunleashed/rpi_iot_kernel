@@ -4,3 +4,6 @@
 [submodule "iot_projects_src_code"]
 	path = iot_projects_src_code
 	url = git@github.com:softwaresunleashed/iot_projects_src_code.git
+[submodule "linux"]
+	path = linux
+	url = git@github.com:raspberrypi/linux.git
