@@ -1,3 +1,6 @@
 [submodule "support"]
 	path = support
 	url = https://github.com/softwaresunleashed/support.git
+[submodule "iot_projects_src_code"]
+	path = iot_projects_src_code
+	url = git@github.com:softwaresunleashed/iot_projects_src_code.git
