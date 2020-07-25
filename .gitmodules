@@ -3,13 +3,13 @@
 	url = https://github.com/softwaresunleashed/support.git
 [submodule "iot_projects_src_code"]
 	path = iot_projects_src_code
-	url = git@github.com:softwaresunleashed/iot_projects_src_code.git
+    url = https://github.com/softwaresunleashed/iot_projects_src_code.git
 [submodule "linux"]
 	path = linux
-	url = git@github.com:raspberrypi/linux.git
+	url = https://github.com/raspberrypi/linux.git
 [submodule "firmware"]
 	path = firmware
-	url = git@github.com:raspberrypi/firmware.git
+	url = https://github.com/raspberrypi/firmware.git
 [submodule "tools"]
 	path = tools
-	url = git@github.com:raspberrypi/tools.git
+	url = https://github.com/raspberrypi/tools.git
